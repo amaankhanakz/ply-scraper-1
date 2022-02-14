@@ -68,7 +68,10 @@ async function getdetails(url, page){
 async function getLinks(page){
     let links=[];
 
-    await page.goto("https://www.kohler.co.in/browse/Bathroom/Basin");
+    await page.goto("https://www.kohler.co.in/browse/Bathroom/Basin", {
+        waitUntil: "load",
+        timeout: 0,
+    });
 
     links = await page.$$eval('.koh-product-tile-inner .koh-product-tile-content a', allAs => allAs.map(a => a.href));
 
