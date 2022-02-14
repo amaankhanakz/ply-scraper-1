@@ -3,7 +3,10 @@ let fs = require('fs');
 
 async function getdetails(url, page){
     try{
-        await page.goto(url);
+        await page.goto(url, {
+            waitUntil: "load";
+            timeout: 0,
+        });
     
         // Name
         const prod_name = await page.$eval(".koh-product-short-description", div => div.textContent);
