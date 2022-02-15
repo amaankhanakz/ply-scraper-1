@@ -91,22 +91,6 @@ for i in range (1,total_pages+1):
             product_desc=""
 
 
-
-        try :
-            product_details_section=soup_single_item.find_all("div",class_="attributesSection")
-
-            try :
-                product_code=product_details_section[0].find("div",class_="value").text
-            except:
-                product_code=""
-            try :
-                product_size=product_details_section[-2].find("div",class_="value").text
-            except:
-                product_size=""
-        except  Exception as e:
-            print(f"----->Error : {e}")
-
-
         try :
             product_details_section=soup_single_item.find_all("div",class_="attributesSection")
 
