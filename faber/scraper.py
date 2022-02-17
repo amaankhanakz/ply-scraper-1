@@ -176,6 +176,4 @@ if __name__ == '__main__':
         './data/small-appliances/air-fryer.csv'
     ]
 
-    # note: subsections are just filters and there is a lot of overlap. separate manually for maximum pain🥲.
-
     scrape(sections, file_names)
