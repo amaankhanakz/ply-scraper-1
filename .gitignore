@@ -3,5 +3,6 @@
 .vscode
 .devcontainer
 *.csv
+*.xlsx
 *.zip
 *.tst.*
