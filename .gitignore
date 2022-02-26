@@ -5,4 +5,7 @@
 *.csv
 *.xlsx
 *.zip
+*.exe
 *.tst.*
+env.py
+__pycache__
