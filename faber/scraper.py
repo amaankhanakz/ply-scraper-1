@@ -10,6 +10,7 @@ def get_last_page(page):
         return 1
 
 def scrape(sections, file_names):
+    # easier to scrape in this layout
     LAYOUT = '?layout=list'
     for i in range(len(sections)):
         with open(file_names[i], 'w') as csv_file:
@@ -99,6 +100,16 @@ def scrape(sections, file_names):
 
 
 if __name__ == '__main__':
+
+    '''
+    usage:
+    -> install requirements
+    -> verify:
+        - all site sections are listed in `sections`
+        - all sites have a corresponding csv file `file_names`
+        - all paths to the csv file are correct
+    -> run
+    '''
 
     sections = [
         'https://faberindia.com/product-category/chimney-hoods/aerostation/',

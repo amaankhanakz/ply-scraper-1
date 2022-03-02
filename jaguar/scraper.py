@@ -22,18 +22,17 @@ def get_last_page(page):
 
 def scrape(site, path, file_path, is_windows):
 
-    # todo: specify errors instead of catch alls in try/except
-
     FILE_PATH = file_path
 
     if is_windows:
-        csv_file = open(FILE_PATH, 'w', newline='', encoding="utf-8")
+        csv_file = open(FILE_PATH, 'w', newline='', encoding="utf-8")   # symbols like ₹ wont render correctly in the final csv without using utf-8 on windows
     else:
         csv_file = open(FILE_PATH, 'w')
 
     csv_writer = csv.writer(csv_file)
     csv_writer.writerow(['url', 'name', 'code', 'description', 'mrp', 'colors', 'image links'])
 
+    # to make sure page layout is alwasy consistent
     FILTER = '#/pageSize=12&orderBy=0&pageNumber='
 
     temp_source = requests.get(f'{site}{path}').text
@@ -134,7 +133,7 @@ def scrape(site, path, file_path, is_windows):
                 colors.append(c)
                 img_links.append(img)
 
-            # ***uncomment next line if scraping title from listing page and not from product page***
+            ## uncomment next line if scraping title from listing page and not from product page
             # name = item.find('h2', class_ = 'product-title').a.text
 
             csv_writer.writerow([url, name, code, description, mrp, colors, img_links])
@@ -143,8 +142,17 @@ def scrape(site, path, file_path, is_windows):
 
 
 if __name__ == '__main__':
+    '''
+    usage:
+    -> install all requirements
+    -> set `IS_WINDOWS` to True if running on windows. this will make sure to use utf-8 encoding while working with csv files. without it, symbols will liik weird in the final csv.
+    -> leave `SITE` as 'https://www.jaquar.com' without a trailing '/'.
+    -> set `PATH` according to the section that is to be scraped.
+    -> set `FILE_PATH` as the path of the csv to which the scraped data is to be written.
+    -> run
 
-    # *** change `IS_WINDOWS` to True if running on windows
+    WARNING: 300x300 resolution images are being scraped. for better resolution change 300x300 to 960x960 in the iamge link. (check if the 960x960 links work. if not check the site for correct size.)
+    '''
     IS_WINDOWS = False
 
     SITE = 'https://www.jaquar.com'

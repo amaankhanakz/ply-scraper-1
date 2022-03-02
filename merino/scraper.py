@@ -70,6 +70,16 @@ def scrape(sections, file_names):
 
 if __name__ == '__main__':
 
+    '''
+    usage:
+    -> install requirements
+    -> verify:
+        - all site sections are listed in `sections`
+        - all sites have a corresponding csv file `file_names`
+        - all paths to the csv file are correct
+    -> run
+    '''
+
     sections = [
         'https://www.merinolaminates.com/en/product_category/merinolam/',
         'https://www.merinolaminates.com/en/product_category/merinolam-postforming/',
