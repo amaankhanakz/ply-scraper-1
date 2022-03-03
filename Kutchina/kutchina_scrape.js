@@ -47,30 +47,77 @@ async function getdetails(url, page){
         // Price
         // const price = await page.$eval("#koh-page-outer > div > div.koh-page > section > div.koh-product-top-row > div.koh-product-details > div.koh-product-skus-colors > ul > li > span", span => span.textContent);
         
+        let image = [];
         const img = [];
+        const lis = await page.$$("div.row > div.col-xs-12.col-md-5 > div > div > ol > div.owl-wrapper-outer > div > div > li > img");
+        
+        let k = 1;
+        //Image
         try{
-            // Image
-            img.push(await page.$eval("div.col-xs-12.col-md-5 > div > div > figure > div > a", a => a.href));
+            if(await page.$("div.row > div.col-xs-12.col-md-5 > div > div > ol > div.owl-wrapper-outer > div > div > li > img")){
+                for(let i =0; i<lis.length;i++){
+                    // Click
+                    lis[i].click();
+                    // Checks for various conditions and then push the image link
+                    try{
+                        if(await page.$(`div.row > div.col-xs-12.col-md-5 > div > div > figure > div:nth-child(${k}) > a > img`)){
+                            img.push(await page.$eval(`div.row > div.col-xs-12.col-md-5 > div > div > figure > div:nth-child(${k}) > a > img`, img => img.src));
+                        }
+                        else if(await page.$(`div.row > div.col-xs-12.col-md-5 > div > div > div > figure > div:nth-child(${k}) > a > img`)){
+                            img.push(await page.$eval(`div.row > div.col-xs-12.col-md-5 > div > div > div > figure > div:nth-child(${k}) > a > img`, img => img.src));
+                        }
+                    }
+                    catch(e){
+                        if(await page.$(`div.row > div.col-xs-12.col-md-5 > div > div > div > figure > div:nth-child(${k}) > a > img`)){
+                            img.push(await page.$eval(`div.row > div.col-xs-12.col-md-5 > div > div > div > figure > div:nth-child(${k}) > a > img`, img => img.src));
+                        }
+                        else{
+                            img.push("");
+                        }
+                    }
+                    image = img.join(', ');
+                    k++;
+                    
+                    await page.waitForTimeout(1000);
+                }
+            }
+            else{
+                try{
+                    if(await page.$(`div.row > div.col-xs-12.col-md-5 > div > div > figure > div:nth-child(${k}) > a > img`)){
+                        img.push(await page.$eval(`div.row > div.col-xs-12.col-md-5 > div > div > figure > div:nth-child(${k}) > a > img`, img => img.src));
+                    }
+                    else if(await page.$(`div.row > div.col-xs-12.col-md-5 > div > div > div > figure > div:nth-child(${k}) > a > img`)){
+                        img.push(await page.$eval(`div.row > div.col-xs-12.col-md-5 > div > div > div > figure > div:nth-child(${k}) > a > img`, img => img.src));
+                    }
+                }
+                catch(e){
+                    try{
+                        if(await page.$(`div.row > div.col-xs-12.col-md-5 > div > div > div > figure > div:nth-child(${k}) > a > img`)){
+                            img.push(await page.$eval(`div.row > div.col-xs-12.col-md-5 > div > div > div > figure > div:nth-child(${k}) > a > img`, img => img.src));
+                        }
+                        else{
+                            img.push("");
+                        }
+                    }
+                    catch(e){}
+                }
+                image = img.join(', ');
+                k++;
+            }
         }
-        catch(e){
-            img.push(await page.$eval("div.col-xs-12.col-md-5 > div > div > div > figure > div.woocommerce-product-gallery__image.flex-active-slide > a", a => a.href));
-            // img.push("");
+        catch(e) {
+            
         }
         
-        // Color Name
         const desc = [];
-        const lis = await page.$$("#tab-description > ul > li > span");
-        let k = 1;
+        const desc_lis = await page.$$("#tab-description > ul > li > span");
+        let m = 1;
     
-        for(let i =0; i<lis.length;i++){
-            // Click
-            // if(lis.length > 2)
-                // lis[i].click();
-
+        for(let i =0; i<desc_lis.length;i++){
             try{
                 // Description
-                desc.push(await page.$eval(`#tab-description > ul:nth-child(${k}) > li > span`, span => span.innerText));
-                k++;
+                desc.push(await page.$eval(`#tab-description > ul:nth-child(${m}) > li > span`, span => span.innerText));
+                m++;
             }
             catch(e){
                 desc.push(" ");
@@ -86,7 +133,7 @@ async function getdetails(url, page){
             Price: price.toString(),
             About: about.toString(),
             // Description: desc.toString(),
-            Image_Link: img.toString()
+            Image_Link: image.toString()
         };
     }
     catch(e){
@@ -99,10 +146,10 @@ async function getLinks(page){
     // usage:
     // -> npm install puppeteer --save
     // -> just set `url` according to the section that is to be scraped.
-    // -> set the file path at line 140 as the path of the csv to which the scraped data is to be written.
+    // -> set the file path at line 187 as the path of the csv to which the scraped data is to be written.
     // -> run
 
-    let url ="water-purifiers/";
+    let url ="induction-and-cookware/";
 
     await page.goto("https://www.kutchina.com/product-category/"+url, {
         waitUntil: "load",
@@ -137,7 +184,7 @@ async function main(){
     const wb = xlsx.utils.book_new();
     const ws = xlsx.utils.json_to_sheet(alldata);
     xlsx.utils.book_append_sheet(wb, ws);
-    xlsx.writeFile(wb, "water_purifiers.xlsx");
+    xlsx.writeFile(wb, "induction_and_cookware.xlsx");
 
     console.log(alldata);
     console.log("Converted to excel file");
