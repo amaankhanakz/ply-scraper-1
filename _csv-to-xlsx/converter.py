@@ -1,3 +1,9 @@
+'''
+usage:
+-> place the .csv's to be converted in ./data
+-> make sure ./xlified-data exists. converted .xlsx's will be stored there
+'''
+
 import os
 import pandas as pd
 

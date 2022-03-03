@@ -1,3 +1,9 @@
+'''
+usage:
+-> fill everything in env.ref.py and rename it to env.py
+-> run this script
+'''
+
 import env
 import boto3
 import requests

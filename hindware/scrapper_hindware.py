@@ -2,7 +2,12 @@ import csv
 from bs4 import BeautifulSoup
 import requests
 
+# usage:
+    # set appropriate path to csv file in `file_name`
+    # set appropriate url in url_pages
 
+
+# set appropriate path to csv file
 file_name="water_closet.csv"
 
 csv_file = open(file_name, 'w', newline='', encoding="utf-8")
@@ -10,7 +15,7 @@ csv_writer = csv.writer(csv_file)
 csv_writer.writerow(['url', 'name', 'Catalogue No.', 'description', 'mrp', 'colors', 'image links','Size'])
 
 
-
+# set appropriate url
 url_pages='https://www.hindwarehomes.com/sanitaryware/water_closet/'
 
 
@@ -45,7 +50,7 @@ for i in range (1,total_pages+1):
     except Exception as e:
         print("----->No products in the page ")
         print(f"Error :{e}")
-        break 
+        break
 
     for item in all_items_product_div:
         try:
@@ -53,7 +58,7 @@ for i in range (1,total_pages+1):
         except Exception as e:
             print("---->Item page not found")
             break
-        
+
         try :
             img_url_find=item.find("a",class_="woocommerce-LoopProduct-link woocommerce-loop-product__link").find("img")["src"]
             img_url_single_item=(img_url_find.replace("-430x392","")).replace("-430x430","")
@@ -107,13 +112,13 @@ for i in range (1,total_pages+1):
         except  Exception as e:
             print(f"----->Error : {e}")
 
-        
+
 
         product_url=url_single_item
         product_colour=colour_names
         product_img=img_url_single_item
         csv_writer.writerow([product_url, product_name, product_code, product_desc, product_price, product_colour,product_img,product_size ])
 
-        
 
-    
+
+

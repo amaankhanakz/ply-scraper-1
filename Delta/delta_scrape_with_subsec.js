@@ -2,10 +2,11 @@ const puppeteer = require('puppeteer');
 const { scrollPageToBottom } = require('puppeteer-autoscroll-down')
 let xlsx = require('xlsx');
 
-// -> for sections with subsections use delta_scrape_with_subsec.js
+// -> this is for sections with subsections
 
 async function getdetails(url, page){
     try{
+
         await page.goto(url, {
             waitUntil: "load",
             timeout: 0,
@@ -61,7 +62,6 @@ async function getdetails(url, page){
         };
     }
     catch(e){
-        throw e;
     }
 };
 
@@ -77,48 +77,69 @@ async function main(){
     const browser = await puppeteer.launch({headless: false, defaultViewport: false});
     const page = await browser.newPage();
 
-// usage:
+    // usage:
     // -> npm install puppeteer --save
     // -> just set `url` according to the section that is to be scraped.
-    // -> set the file path at line 115 as the path of the csv to which the scraped data is to be written.
+    // -> set the file path at line 108 as the path of the csv to which the scraped data is to be written.
     // -> run
 
-    let url="abstract-laminate/";
+    let url="digital-collection-laminate/";
     await page.goto("https://www.deltalaminates.in/products/"+url, {
         waitUntil: "load",
         timeout: 0,
     });
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
 
-    const alldata = [];
-    await scrollPageToBottom(page, {
-        size: 100,
-        delay: 500
-    })
+    const allmainlinks = await getLinks(page);
+    let m=1;
+    console.log(allmainlinks.length);
+    for(let mainlink of allmainlinks){
+        const excel_name = [];
+        
+        await page.goto(mainlink, {
+            waitUntil: "load",
+            timeout: 0,
+        });
+        await page.waitForTimeout(2000);
 
-    const allLinks = await getLinks(page);
-    let i=1;
+        try{
+            // Change the file name here 
+            excel_name.push("digital_"+m+".xlsx");
+        }
+        catch(e){}
+
+        const alldata = [];
+        await scrollPageToBottom(page, {
+            size: 200,
+            delay: 500
+        })
     
-    console.log(allLinks.length);
-
-    for(let link of allLinks){
-        const data = await getdetails(link,page);
-        alldata.push(data);
-        // if(i==0) break;
-        console.log(i);
-        i++;
+        const allLinks = await getLinks(page);
+        let i=1;
+        
+        console.log(allLinks.length);
+    
+        for(let link of allLinks){
+            const data = await getdetails(link,page);
+            alldata.push(data);
+            // if(i==0) break;
+            console.log("Inner"+i);
+            i++;
+        }
+    
+        // To csv
+        const wb = xlsx.utils.book_new();
+        const ws = xlsx.utils.json_to_sheet(alldata);
+        xlsx.utils.book_append_sheet(wb, ws);
+        xlsx.writeFile(wb, excel_name.toString());
+    
+        console.log(alldata);
+        console.log("Done!!"+m);
+        console.log("Outer"+m);
+        m++;
     }
 
-    // To csv
-    const wb = xlsx.utils.book_new();
-    const ws = xlsx.utils.json_to_sheet(alldata);
-    xlsx.utils.book_append_sheet(wb, ws);
-    xlsx.writeFile(wb, "abstract_laminate.xlsx");
-
-    console.log(alldata);
-    console.log("Converted to excel file");
-    console.log("Done!!");
 
     await browser.close()
 }
