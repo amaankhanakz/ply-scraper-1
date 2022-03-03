@@ -34,6 +34,9 @@ async function getdetails(url, page){
         // Color
         const indi_color = await page.$eval("div.summary.entry-summary > div > div:nth-child(9) > div.col-variation-val", div => div.textContent);
         
+        // Quantity
+        const qty = await page.$eval("div.product-banner > div > div.row.pt-30 > div.summary.entry-summary > div > div:nth-child(10) > div.col-variation-val", div => div.textContent);
+        
         // Coverage Area
         const area = await page.$eval("div.summary.entry-summary > div > div:nth-child(11) > div.col-variation-val", div => div.textContent);
         
@@ -52,7 +55,7 @@ async function getdetails(url, page){
             img.push(await page.$eval(`div.swiper-wrapper > div:nth-child(${k}) > img`, img => img.src));
             k++;
     
-            await page.waitForTimeout((Math.floor(Math.random()*3)+1)*1000);
+            await page.waitForTimeout(1000);
         }
 
     
@@ -66,6 +69,7 @@ async function getdetails(url, page){
             Looks_Like: look,
             Finish: finish,
             Color: indi_color,
+            Quantity: qty,
             Coverage_Area: area,
             Color_Variation: color_var,
             Image: img.toString()
@@ -78,7 +82,13 @@ async function getdetails(url, page){
 
 async function getLinks(page){
     let links=[];
-    let url = "mosaico-collection?crust-collection";
+    // usage:
+    // -> npm install puppeteer --save
+    // -> just set `url` according to the section that is to be scraped.
+    // -> set the file path at line 127 as the path of the csv to which the scraped data is to be written.
+    // -> run
+
+    let url = "bathroom-tiles-collection";
 
     await page.goto("https://www.nitco.in/"+url, {
         waitUntil: "load",
@@ -98,7 +108,7 @@ async function main(){
 
     const alldata = [];
     const allLinks = await getLinks(page);
-    let i=0;
+    let i=1;
     
     console.log(allLinks.length);
     
@@ -106,14 +116,15 @@ async function main(){
         const data = await getdetails(link,page);
         alldata.push(data);
         // if(i==1) break;
-        // i++;
+        console.log(i);
+        i++;
     }
 
     // To csv
     const wb = xlsx.utils.book_new();
     const ws = xlsx.utils.json_to_sheet(alldata);
     xlsx.utils.book_append_sheet(wb, ws);
-    xlsx.writeFile(wb, "mosaico_crust_collection.xlsx");
+    xlsx.writeFile(wb, "bathroom_tiles.xlsx");
     
     console.log(alldata);
     console.log("Converted to excel file");
