@@ -54,7 +54,7 @@ async function getdetails(url, page){
         }
         catch(e){
             img.push(await page.$eval("div.col-xs-12.col-md-5 > div > div > div > figure > div.woocommerce-product-gallery__image.flex-active-slide > a", a => a.href));
-            
+            // img.push("");
         }
         
         // Color Name
@@ -96,7 +96,13 @@ async function getdetails(url, page){
 
 async function getLinks(page){
     let links=[];
-    let url ="induction-and-cookware/";
+    // usage:
+    // -> npm install puppeteer --save
+    // -> just set `url` according to the section that is to be scraped.
+    // -> set the file path at line 140 as the path of the csv to which the scraped data is to be written.
+    // -> run
+
+    let url ="water-purifiers/";
 
     await page.goto("https://www.kutchina.com/product-category/"+url, {
         waitUntil: "load",
@@ -131,7 +137,7 @@ async function main(){
     const wb = xlsx.utils.book_new();
     const ws = xlsx.utils.json_to_sheet(alldata);
     xlsx.utils.book_append_sheet(wb, ws);
-    xlsx.writeFile(wb, "induction_and_cookware.xlsx");
+    xlsx.writeFile(wb, "water_purifiers.xlsx");
 
     console.log(alldata);
     console.log("Converted to excel file");
