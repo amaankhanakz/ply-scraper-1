@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 let fs = require('fs');
 let xlsx = require('xlsx');
 
+// For mosaico section
 async function getdetails(url, page){
     try{
         await page.goto(url, {
@@ -75,6 +76,12 @@ async function getdetails(url, page){
 
 async function getLinks(page){
     let links=[];
+    // usage:
+    // -> npm install puppeteer --save
+    // -> just set `url` according to the section that is to be scraped.
+    // -> set the file path at line 120 as the path of the csv to which the scraped data is to be written.
+    // -> run
+
     let url = "mosaico-collection?signature-collection";
 
     await page.goto("https://www.nitco.in/"+url, {
