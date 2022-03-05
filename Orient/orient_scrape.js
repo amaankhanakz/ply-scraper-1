@@ -7,7 +7,7 @@ async function getdetails(url, page){
             waitUntil: "load",
             timeout: 0,
         });
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(2000);
     
         // Name
         const prod_name = await page.$eval("#product-main-info > div > div > h1", h1 => h1.textContent);
@@ -35,7 +35,7 @@ async function getdetails(url, page){
         try{
             for(let i =0; i<lis.length;i++){
                 // Click
-                await page.waitForTimeout(1000);
+                await page.waitForSelector("div.pr-thumbs > div > div > div.slick-slide > div > div > img", {visible: true, timeout: 7000 });
                 lis[i].click();
                 img.push(await page.$eval(`figure > img`, img => img.src));
                 image = img.join(', ');
