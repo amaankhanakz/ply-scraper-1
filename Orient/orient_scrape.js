@@ -7,7 +7,7 @@ async function getdetails(url, page){
             waitUntil: "load",
             timeout: 0,
         });
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(1000);
     
         // Name
         const prod_name = await page.$eval("#product-main-info > div > div > h1", h1 => h1.textContent);
