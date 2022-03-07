@@ -113,18 +113,24 @@ async function getdetails(url, page){
         const desc_lis = await page.$$("#tab-description > ul > li > span");
         let m = 1;
     
-        for(let i =0; i<desc_lis.length;i++){
-            try{
-                // Description
-                desc.push(await page.$eval(`#tab-description > ul:nth-child(${m}) > li > span`, span => span.innerText));
-                m++;
+        // Description
+        try{
+            if(await page.$("#tab-description > ul > li > span")){
+                for(let i =0; i<desc_lis.length;i++){
+                    try{
+                        desc.push(await page.$eval(`#tab-description > ul:nth-child(${m}) > li > span`, span => span.innerText));
+                        m++;
+                    }
+                    catch(e){
+                        desc.push(" ");
+                    }
+                }
             }
-            catch(e){
-                desc.push(" ");
+            else if(await page.$("#tab-description > p")){
+                desc.push(await page.$eval(`#tab-description > p`, p => p.innerText));
             }
-    
-            // await page.waitForTimeout((Math.floor(Math.random()*3)+1)*1000);
         }
+        catch(e) {}
     
         return {
             URL: url,
@@ -132,7 +138,7 @@ async function getdetails(url, page){
             Code: code,
             Price: price.toString(),
             About: about.toString(),
-            // Description: desc.toString(),
+            Description: desc.toString(),
             Image_Link: image.toString()
         };
     }
@@ -149,7 +155,7 @@ async function getLinks(page){
     // -> set the file path at line 187 as the path of the csv to which the scraped data is to be written.
     // -> run
 
-    let url ="induction-and-cookware/";
+    let url ="large-kitchen-appliances/kitchen-chimney/inclined/";
 
     await page.goto("https://www.kutchina.com/product-category/"+url, {
         waitUntil: "load",
