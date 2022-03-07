@@ -109,28 +109,70 @@ async function getdetails(url, page){
             
         }
         
-        const desc = [];
-        const desc_lis = await page.$$("#tab-description > ul > li > span");
         let m = 1;
-    
-        // Description
-        try{
-            if(await page.$("#tab-description > ul > li > span")){
-                for(let i =0; i<desc_lis.length;i++){
-                    try{
-                        desc.push(await page.$eval(`#tab-description > ul:nth-child(${m}) > li > span`, span => span.innerText));
-                        m++;
+
+        const extra_lis = await page.$$("div.woocommerce-tabs > ul > li");
+        const desc = [];
+        const add = [];
+        let usp = "";
+        let size = "";
+        let tech = "";
+        let power = "";
+        for(let i=0; i<extra_lis.length;i++){
+            extra_lis[i].click();
+            await page.waitForTimeout(1000);
+            const element = await page.$(`div.woocommerce-tabs > ul > li:nth-child(${(i+1)})`);
+            const classname = await page.evaluate(el => el.className, element);
+            if(classname=="description_tab active"){
+                // Description
+                const desc_lis = await page.$$("#tab-description > ul > li > span");
+                try{
+                    if(await page.$("#tab-description > ul > li > span")){
+                        for(let i =0; i<desc_lis.length;i++){
+                            try{
+                                desc.push(await page.$eval(`#tab-description > ul:nth-child(${m}) > li > span`, span => span.innerText));
+                                m++;
+                            }
+                            catch(e){
+                                desc.push(" ");
+                            }
+                        }
                     }
-                    catch(e){
-                        desc.push(" ");
+                    else if(await page.$("#tab-description > p")){
+                        desc.push(await page.$eval(`#tab-description > p`, p => p.innerText));
                     }
                 }
+                catch(e) {}
             }
-            else if(await page.$("#tab-description > p")){
-                desc.push(await page.$eval(`#tab-description > p`, p => p.innerText));
+            else if(classname == "additional_information_tab active"){
+                const add_lis = await page.$$("#tab-additional_information > table > tbody > tr");
+                try{
+                    for(let j =1; j<=add_lis.length;j++){
+                        add.push(await page.$eval(`#tab-additional_information > table > tbody > tr:nth-child(${j}) > th`, th => th.innerText));
+                        add.push(": ");
+                        add.push(await page.$eval(`#tab-additional_information > table > tbody > tr:nth-child(${j}) > td > p`, p => p.innerText));
+                    }
+                }
+                catch(e){
+                    add.push("");
+                }
+            }
+            else if(classname == "product-usp_tab active"){
+                usp = await page.$eval("#tab-product-usp > p", p => p.innerText);
+            }
+            else if(classname == "size-dimensions_tab active"){
+                size = await page.$eval("#tab-size-dimensions > p", p => p.innerText);
+            }
+            else if(classname == "technical-specification_tab active"){
+                tech = await page.$eval("#tab-technical-specification > p", p => p.innerText);
+            }
+            else if(classname == "power-consumption_tab active"){
+                power = await page.$eval("#tab-power-consumption > p", p => p.innerText);
+            }
+            else{
+                console.log("Not printing review");
             }
         }
-        catch(e) {}
     
         return {
             URL: url,
@@ -139,6 +181,11 @@ async function getdetails(url, page){
             Price: price.toString(),
             About: about.toString(),
             Description: desc.toString(),
+            Additional_Info: add.toString(),
+            Usp: usp.toString(),
+            Size: size.toString(),
+            Technical: tech.toString(),
+            Power: power.toString(),
             Image_Link: image.toString()
         };
     }
