@@ -170,7 +170,7 @@ async function getdetails(url, page){
                 power = await page.$eval("#tab-power-consumption > p", p => p.innerText);
             }
             else{
-                console.log("Not printing review");
+                
             }
         }
     
@@ -190,12 +190,56 @@ async function getdetails(url, page){
         };
     }
     catch(e){
-        throw(e);
+        return {
+            URL: url,
+            Name: "",
+            Code: "",
+            Price: "",
+            About: "",
+            Description: "",
+            Additional_Info: "",
+            Usp: "",
+            Size: "",
+            Technical: "",
+            Power: "",
+            Image_Link: ""
+        };
     }
 };
 
 async function getLinks(page){
     let links=[];
+
+    links = await page.$$eval('div.item-col > div > div > div.list-col4 > div > a', allAs => allAs.map(a => a.href));
+
+    return links;
+}
+
+// Function to click on the load more button
+async function clicktillEnd(page){
+    await page.waitForTimeout(2000);
+
+    const pagelinks = await page.$$('div.toolbar > nav > ul > li > a');
+    console.log("Found pagelinks "+pagelinks.length-1);
+    const pagelink = [];
+    pagelink.push(await page.url());
+    try{
+        for(let i = 0; i < pagelinks.length-1; i++){
+            pagelink.push(await page.$eval(`div.toolbar > nav > ul > li:nth-child(${i+2}) > a`, a => a.href));
+        }
+    }
+    catch(e){
+        console.log("No pages found");
+    }
+    console.log(pagelink);
+    return pagelink;
+}
+
+async function main(){
+    const browser = await puppeteer.launch({headless: false, defaultViewport: false});
+    const page = await browser.newPage();
+
+    const alldata = [];
     // usage:
     // -> npm install puppeteer --save
     // -> just set `url` according to the section that is to be scraped.
@@ -208,28 +252,26 @@ async function getLinks(page){
         waitUntil: "load",
         timeout: 0,
     });
-
-    links = await page.$$eval('div.item-col > div > div > div.list-col4 > div > a', allAs => allAs.map(a => a.href));
-
-    return links;
-}
-
-
-async function main(){
-    const browser = await puppeteer.launch({headless: false, defaultViewport: false});
-    const page = await browser.newPage();
-
-    const alldata = [];
-    const allLinks = await getLinks(page);
-    let i=0;
+    await page.waitForTimeout(1000);
     
-    console.log(allLinks.length);
-
-    for(let link of allLinks){
-        const data = await getdetails(link,page);
-        alldata.push(data);
-        // if(i==3) break;
-        // i++;
+    const pagelinks = await clicktillEnd(page);
+    await page.waitForTimeout(1000);
+    for(let pagelink of pagelinks){
+        let i=1;
+        const allLinks = await getLinks(page);
+        console.log(allLinks.length);
+        for(let link of allLinks){
+            const data = await getdetails(link,page);
+            alldata.push(data);
+            // if(i==3) break;
+            console.log("In "+i);
+            i++;
+        }
+        await page.goto(pagelink, {
+            waitUntil: "load",
+            timeout: 0,
+        });
+        await page.waitForTimeout(1000);
     }
 
     console.log(alldata);
