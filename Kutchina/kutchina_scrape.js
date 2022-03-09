@@ -220,7 +220,7 @@ async function clicktillEnd(page){
     await page.waitForTimeout(2000);
 
     const pagelinks = await page.$$('div.toolbar > nav > ul > li > a');
-    console.log("Found pagelinks "+pagelinks.length-1);
+    console.log("Found pagelinks "+ pagelinks.length);
     const pagelink = [];
     pagelink.push(await page.url());
     try{
@@ -246,7 +246,7 @@ async function main(){
     // -> set the file path at line 187 as the path of the csv to which the scraped data is to be written.
     // -> run
 
-    let url ="large-kitchen-appliances/kitchen-chimney/flat-chimney/";
+    let url ="small-kitchen-appliances/electric-kettle/";
 
     await page.goto("https://www.kutchina.com/product-category/"+url, {
         waitUntil: "load",
@@ -279,7 +279,7 @@ async function main(){
     const wb = xlsx.utils.book_new();
     const ws = xlsx.utils.json_to_sheet(alldata);
     xlsx.utils.book_append_sheet(wb, ws);
-    xlsx.writeFile(wb, "flat_chimney.xlsx");
+    xlsx.writeFile(wb, "electric_kettle.xlsx");
 
     console.log(alldata);
     console.log("Converted to excel file");
