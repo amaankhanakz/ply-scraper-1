@@ -109,28 +109,70 @@ async function getdetails(url, page){
             
         }
         
-        const desc = [];
-        const desc_lis = await page.$$("#tab-description > ul > li > span");
         let m = 1;
-    
-        // Description
-        try{
-            if(await page.$("#tab-description > ul > li > span")){
-                for(let i =0; i<desc_lis.length;i++){
-                    try{
-                        desc.push(await page.$eval(`#tab-description > ul:nth-child(${m}) > li > span`, span => span.innerText));
-                        m++;
+
+        const extra_lis = await page.$$("div.woocommerce-tabs > ul > li");
+        const desc = [];
+        const add = [];
+        let usp = "";
+        let size = "";
+        let tech = "";
+        let power = "";
+        for(let i=0; i<extra_lis.length;i++){
+            extra_lis[i].click();
+            await page.waitForTimeout(1000);
+            const element = await page.$(`div.woocommerce-tabs > ul > li:nth-child(${(i+1)})`);
+            const classname = await page.evaluate(el => el.className, element);
+            if(classname=="description_tab active"){
+                // Description
+                const desc_lis = await page.$$("#tab-description > ul > li > span");
+                try{
+                    if(await page.$("#tab-description > ul > li > span")){
+                        for(let i =0; i<desc_lis.length;i++){
+                            try{
+                                desc.push(await page.$eval(`#tab-description > ul:nth-child(${m}) > li > span`, span => span.innerText));
+                                m++;
+                            }
+                            catch(e){
+                                desc.push(" ");
+                            }
+                        }
                     }
-                    catch(e){
-                        desc.push(" ");
+                    else if(await page.$("#tab-description > p")){
+                        desc.push(await page.$eval(`#tab-description > p`, p => p.innerText));
                     }
                 }
+                catch(e) {}
             }
-            else if(await page.$("#tab-description > p")){
-                desc.push(await page.$eval(`#tab-description > p`, p => p.innerText));
+            else if(classname == "additional_information_tab active"){
+                const add_lis = await page.$$("#tab-additional_information > table > tbody > tr");
+                try{
+                    for(let j =1; j<=add_lis.length;j++){
+                        add.push(await page.$eval(`#tab-additional_information > table > tbody > tr:nth-child(${j}) > th`, th => th.innerText));
+                        add.push(": ");
+                        add.push(await page.$eval(`#tab-additional_information > table > tbody > tr:nth-child(${j}) > td > p`, p => p.innerText));
+                    }
+                }
+                catch(e){
+                    add.push("");
+                }
+            }
+            else if(classname == "product-usp_tab active"){
+                usp = await page.$eval("#tab-product-usp > p", p => p.innerText);
+            }
+            else if(classname == "size-dimensions_tab active"){
+                size = await page.$eval("#tab-size-dimensions > p", p => p.innerText);
+            }
+            else if(classname == "technical-specification_tab active"){
+                tech = await page.$eval("#tab-technical-specification > p", p => p.innerText);
+            }
+            else if(classname == "power-consumption_tab active"){
+                power = await page.$eval("#tab-power-consumption > p", p => p.innerText);
+            }
+            else{
+                
             }
         }
-        catch(e) {}
     
         return {
             URL: url,
@@ -139,50 +181,97 @@ async function getdetails(url, page){
             Price: price.toString(),
             About: about.toString(),
             Description: desc.toString(),
+            Additional_Info: add.toString(),
+            Usp: usp.toString(),
+            Size: size.toString(),
+            Technical: tech.toString(),
+            Power: power.toString(),
             Image_Link: image.toString()
         };
     }
     catch(e){
-        throw(e);
+        return {
+            URL: url,
+            Name: "",
+            Code: "",
+            Price: "",
+            About: "",
+            Description: "",
+            Additional_Info: "",
+            Usp: "",
+            Size: "",
+            Technical: "",
+            Power: "",
+            Image_Link: ""
+        };
     }
 };
 
 async function getLinks(page){
     let links=[];
-    // usage:
-    // -> npm install puppeteer --save
-    // -> just set `url` according to the section that is to be scraped.
-    // -> set the file path at line 187 as the path of the csv to which the scraped data is to be written.
-    // -> run
-
-    let url ="large-kitchen-appliances/kitchen-chimney/inclined/";
-
-    await page.goto("https://www.kutchina.com/product-category/"+url, {
-        waitUntil: "load",
-        timeout: 0,
-    });
 
     links = await page.$$eval('div.item-col > div > div > div.list-col4 > div > a', allAs => allAs.map(a => a.href));
 
     return links;
 }
 
+// Function to click on the load more button
+async function clicktillEnd(page){
+    await page.waitForTimeout(2000);
+
+    const pagelinks = await page.$$('div.toolbar > nav > ul > li > a');
+    console.log("Found pagelinks "+ pagelinks.length);
+    const pagelink = [];
+    pagelink.push(await page.url());
+    try{
+        for(let i = 0; i < pagelinks.length-1; i++){
+            pagelink.push(await page.$eval(`div.toolbar > nav > ul > li:nth-child(${i+2}) > a`, a => a.href));
+        }
+    }
+    catch(e){
+        console.log("No pages found");
+    }
+    console.log(pagelink);
+    return pagelink;
+}
 
 async function main(){
     const browser = await puppeteer.launch({headless: false, defaultViewport: false});
     const page = await browser.newPage();
 
     const alldata = [];
-    const allLinks = await getLinks(page);
-    let i=0;
-    
-    console.log(allLinks.length);
+    // usage:
+    // -> npm install puppeteer --save
+    // -> just set `url` according to the section that is to be scraped.
+    // -> set the file path at line 187 as the path of the csv to which the scraped data is to be written.
+    // -> run
 
-    for(let link of allLinks){
-        const data = await getdetails(link,page);
-        alldata.push(data);
-        // if(i==3) break;
-        // i++;
+    let url ="small-kitchen-appliances/electric-kettle/";
+
+    await page.goto("https://www.kutchina.com/product-category/"+url, {
+        waitUntil: "load",
+        timeout: 0,
+    });
+    await page.waitForTimeout(1000);
+    
+    const pagelinks = await clicktillEnd(page);
+    await page.waitForTimeout(1000);
+    for(let pagelink of pagelinks){
+        let i=1;
+        const allLinks = await getLinks(page);
+        console.log(allLinks.length);
+        for(let link of allLinks){
+            const data = await getdetails(link,page);
+            alldata.push(data);
+            // if(i==3) break;
+            console.log("In "+i);
+            i++;
+        }
+        await page.goto(pagelink, {
+            waitUntil: "load",
+            timeout: 0,
+        });
+        await page.waitForTimeout(1000);
     }
 
     console.log(alldata);
@@ -190,7 +279,7 @@ async function main(){
     const wb = xlsx.utils.book_new();
     const ws = xlsx.utils.json_to_sheet(alldata);
     xlsx.utils.book_append_sheet(wb, ws);
-    xlsx.writeFile(wb, "induction_and_cookware.xlsx");
+    xlsx.writeFile(wb, "electric_kettle.xlsx");
 
     console.log(alldata);
     console.log("Converted to excel file");
