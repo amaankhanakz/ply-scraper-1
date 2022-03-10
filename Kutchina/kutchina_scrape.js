@@ -117,7 +117,6 @@ async function getdetails(url, page){
         let m = 1;
 
         const extra_lis = await page.$$("div.woocommerce-tabs > ul > li");
-        console.log(extra_lis.length);
         const desc = [];
         const add = [];
         let usp = "";
@@ -131,7 +130,6 @@ async function getdetails(url, page){
                 const element = await page.$(`div.woocommerce-tabs > ul > li:nth-child(${(i+1)})`);
                 const classname = await page.evaluate(el => el.className, element);
                 if(classname=="description_tab active"){
-                    console.log("In description tab");
                     // Description
                     const desc_lis = await page.$$("#tab-description > ul > li > span");
                     try{
@@ -183,9 +181,7 @@ async function getdetails(url, page){
                     console.log(power);
                 }
                 else{
-                    console.log("Error");
                 }
-                console.log("End of loop");
             }
         }
         catch(e){}
