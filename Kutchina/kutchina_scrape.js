@@ -15,6 +15,7 @@ async function getdetails(url, page){
 
         let code = "";
         let price = "";
+        let cat = "";
         const about = [];
         
         try{
@@ -44,8 +45,12 @@ async function getdetails(url, page){
             about.push("");
         }
     
-        // Price
-        // const price = await page.$eval("#koh-page-outer > div > div.koh-page > section > div.koh-product-top-row > div.koh-product-details > div.koh-product-skus-colors > ul > li > span", span => span.textContent);
+        try{
+            cat = await page.$eval("div.row > div.col-summary > div > div.product_meta > span", span => span.innerText);
+        }
+        catch(e){
+            cat ="";
+        }
         
         let image = [];
         const img = [];
@@ -112,71 +117,82 @@ async function getdetails(url, page){
         let m = 1;
 
         const extra_lis = await page.$$("div.woocommerce-tabs > ul > li");
+        console.log(extra_lis.length);
         const desc = [];
         const add = [];
         let usp = "";
         let size = "";
         let tech = "";
         let power = "";
-        for(let i=0; i<extra_lis.length;i++){
-            extra_lis[i].click();
-            await page.waitForTimeout(1000);
-            const element = await page.$(`div.woocommerce-tabs > ul > li:nth-child(${(i+1)})`);
-            const classname = await page.evaluate(el => el.className, element);
-            if(classname=="description_tab active"){
-                // Description
-                const desc_lis = await page.$$("#tab-description > ul > li > span");
-                try{
-                    if(await page.$("#tab-description > ul > li > span")){
-                        for(let i =0; i<desc_lis.length;i++){
-                            try{
-                                desc.push(await page.$eval(`#tab-description > ul:nth-child(${m}) > li > span`, span => span.innerText));
-                                m++;
-                            }
-                            catch(e){
-                                desc.push(" ");
+        try{
+            for(let i=0; i<extra_lis.length;i++){
+                extra_lis[i].click();
+                await page.waitForTimeout(1000);
+                const element = await page.$(`div.woocommerce-tabs > ul > li:nth-child(${(i+1)})`);
+                const classname = await page.evaluate(el => el.className, element);
+                if(classname=="description_tab active"){
+                    console.log("In description tab");
+                    // Description
+                    const desc_lis = await page.$$("#tab-description > ul > li > span");
+                    try{
+                        if(await page.$("#tab-description > ul > li > span")){
+                            for(let i =0; i<desc_lis.length;i++){
+                                //FIXME: fix the kettle
+                                try{
+                                    desc.push(await page.$eval(`#tab-description > ul:nth-child(${m}) > li > span`, span => span.innerText));
+                                    m++;
+                                }
+                                catch(e){
+                                    desc.push(" ");
+                                }
                             }
                         }
+                        else if(await page.$("#tab-description > p")){
+                            desc.push(await page.$eval(`#tab-description > p`, p => p.innerText));
+                        }
                     }
-                    else if(await page.$("#tab-description > p")){
-                        desc.push(await page.$eval(`#tab-description > p`, p => p.innerText));
+                    catch(e) {}
+                }
+                else if(classname == "additional_information_tab active"){
+                    const add_lis = await page.$$("#tab-additional_information > table > tbody > tr");
+                    try{
+                        for(let j =1; j<=add_lis.length;j++){
+                            add.push(await page.$eval(`#tab-additional_information > table > tbody > tr:nth-child(${j}) > th`, th => th.innerText));
+                            add.push(": ");
+                            add.push(await page.$eval(`#tab-additional_information > table > tbody > tr:nth-child(${j}) > td > p`, p => p.innerText));
+                        }
+                    }
+                    catch(e){
+                        add.push("");
                     }
                 }
-                catch(e) {}
-            }
-            else if(classname == "additional_information_tab active"){
-                const add_lis = await page.$$("#tab-additional_information > table > tbody > tr");
-                try{
-                    for(let j =1; j<=add_lis.length;j++){
-                        add.push(await page.$eval(`#tab-additional_information > table > tbody > tr:nth-child(${j}) > th`, th => th.innerText));
-                        add.push(": ");
-                        add.push(await page.$eval(`#tab-additional_information > table > tbody > tr:nth-child(${j}) > td > p`, p => p.innerText));
-                    }
+                else if(classname == "product-usp_tab active"){
+                    usp = await page.$eval("#tab-product-usp > p", p => p.innerText);
+                    console.log(usp);
                 }
-                catch(e){
-                    add.push("");
+                else if(classname == "size-dimensions_tab active"){
+                    size = await page.$eval("#tab-size-dimensions > p", p => p.innerText);
+                    console.log(size);
                 }
-            }
-            else if(classname == "product-usp_tab active"){
-                usp = await page.$eval("#tab-product-usp > p", p => p.innerText);
-            }
-            else if(classname == "size-dimensions_tab active"){
-                size = await page.$eval("#tab-size-dimensions > p", p => p.innerText);
-            }
-            else if(classname == "technical-specification_tab active"){
-                tech = await page.$eval("#tab-technical-specification > p", p => p.innerText);
-            }
-            else if(classname == "power-consumption_tab active"){
-                power = await page.$eval("#tab-power-consumption > p", p => p.innerText);
-            }
-            else{
-                
+                else if(classname == "technical-specification_tab active"){
+                    tech = await page.$eval("#tab-technical-specification > p", p => p.innerText);
+                    console.log(tech);
+                }
+                else if(classname == "power-consumption_tab active"){
+                    power = await page.$eval("#tab-power-consumption > p", p => p.innerText);
+                    console.log(power);
+                }
+                else{
+                    console.log("Error");
+                }
+                console.log("End of loop");
             }
         }
-    
+        catch(e){}
         return {
             URL: url,
             Name: prod_name,
+            Category: cat.toString(),
             Code: code,
             Price: price.toString(),
             About: about.toString(),
@@ -190,20 +206,7 @@ async function getdetails(url, page){
         };
     }
     catch(e){
-        return {
-            URL: url,
-            Name: "",
-            Code: "",
-            Price: "",
-            About: "",
-            Description: "",
-            Additional_Info: "",
-            Usp: "",
-            Size: "",
-            Technical: "",
-            Power: "",
-            Image_Link: ""
-        };
+        console.log("In catch");
     }
 };
 
@@ -215,7 +218,7 @@ async function getLinks(page){
     return links;
 }
 
-// Function to click on the load more button
+// Function to get pages links
 async function clicktillEnd(page){
     await page.waitForTimeout(2000);
 
@@ -261,10 +264,10 @@ async function main(){
         const allLinks = await getLinks(page);
         console.log(allLinks.length);
         for(let link of allLinks){
+            console.log("In "+i);
             const data = await getdetails(link,page);
             alldata.push(data);
             // if(i==3) break;
-            console.log("In "+i);
             i++;
         }
         await page.goto(pagelink, {
@@ -279,13 +282,13 @@ async function main(){
     const wb = xlsx.utils.book_new();
     const ws = xlsx.utils.json_to_sheet(alldata);
     xlsx.utils.book_append_sheet(wb, ws);
-    xlsx.writeFile(wb, "electric_kettle.xlsx");
+    xlsx.writeFile(wb, "example.xlsx");
 
     console.log(alldata);
     console.log("Converted to excel file");
     console.log("Done!!");
 
-    await browser.close()
+    await browser.close();
 }
 
 main();
