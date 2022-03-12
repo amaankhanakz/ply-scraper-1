@@ -2,7 +2,6 @@ const puppeteer = require('puppeteer');
 const { scrollPageToBottom } = require('puppeteer-autoscroll-down')
 let xlsx = require('xlsx');
 
-// -> this copy is for sections with subsections
 
 async function getdetails(url, page){
     try{
@@ -24,11 +23,22 @@ async function getdetails(url, page){
         // Color
         const color = [];
         try{
-            try{
-                color.push(await page.$eval("div.mobile-four > div:nth-child(8) > div > ul > li:nth-child(2) > div > p", p => p.innerText));
-            }
-            catch(e){
-                color.push(await page.$eval("div.mobile-four > div:nth-child(9) > div > ul > li:nth-child(2) > div > p", p => p.innerText));
+            if((await page.$("div.mobile-four > div:nth-child(9) > div > ul")) || (await page.$("div.mobile-four > div:nth-child(8) > div > ul"))){
+                let color_list = "";
+                try{
+                    color_list = await page.$$("div.mobile-four > div:nth-child(9) > div > ul > li > div > p");
+                }
+                catch(e){
+                    color_list = await page.$$("div.mobile-four > div:nth-child(8) > div > ul > li > div > p");
+                }
+                for(let y=1; y<=color_list.length; y++){
+                    try{
+                        color.push(await page.$eval(`div.mobile-four > div:nth-child(8) > div > ul > li:nth-child(${(y+1)}) > div > p`, p => p.innerText));
+                    }
+                    catch(e){
+                        color.push(await page.$eval(`div.mobile-four > div:nth-child(9) > div > ul > li:nth-child(${(y+1)}) > div > p`, p => p.innerText));
+                    }
+                }
             }
         }
         catch(e){}
@@ -37,9 +47,7 @@ async function getdetails(url, page){
         try{
             if(await page.$("div.div-contenedor-ficha-producto > div > div > div.mobile-four > div:nth-child(5) > div > div:nth-child(1) > div > ul")){
                 const about_list = await page.$$("div.mobile-four.div-two-part.columns.datasheet > div:nth-child(5) > div > div > div > ul.lista-atributos > li");
-                console.log(about_list.length);
                 for(let z=1;z<=about_list.length;z++){
-                    console.log("In about");
                     about.push(await page.$eval(`div.mobile-four.div-two-part.columns.datasheet > div:nth-child(5) > div > div > div > ul.lista-atributos > li:nth-child(${z})`, li => li.innerText));
                 }
             }
@@ -89,7 +97,7 @@ async function main(){
     // -> set the file path at line 108 as the path of the csv to which the scraped data is to be written.
     // -> run
 
-    let url="#!/faucet/sensor-taps";
+    let url="#!/flushing-cistern-seat-covers/polymer-cister";
     await page.goto("https://www.parryware.in/catalogue/products/"+url, {
         waitUntil: "load",
         timeout: 0,
