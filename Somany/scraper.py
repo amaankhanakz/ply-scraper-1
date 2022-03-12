@@ -8,7 +8,7 @@ import os
 def get_last_page(page):
     try:
         last_page = page.select_one('ul.items.pages-items li:nth-last-child(2) a span:nth-child(2)').text
-    except IndexError:
+    except Exception as e:
         last_page = 1
     return int(last_page)
 
