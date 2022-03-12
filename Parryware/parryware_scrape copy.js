@@ -25,12 +25,38 @@ async function getdetails(url, page) {
 
         // Color
         const color = [];
-        try {
-            color.push(await page.$eval("div.mobile-four > div:nth-child(8) > div > ul > li:nth-child(2) > div > p", p => p.innerText));
+        try{
+            if((await page.$("div.mobile-four > div:nth-child(9) > div > ul")) || (await page.$("div.mobile-four > div:nth-child(8) > div > ul"))){
+                let color_list = "";
+                try{
+                    color_list = await page.$$("div.mobile-four > div:nth-child(9) > div > ul > li > div > p");
+                }
+                catch(e){
+                    color_list = await page.$$("div.mobile-four > div:nth-child(8) > div > ul > li > div > p");
+                }
+                for(let y=1; y<=color_list.length; y++){
+                    try{
+                        color.push(await page.$eval(`div.mobile-four > div:nth-child(8) > div > ul > li:nth-child(${(y+1)}) > div > p`, p => p.innerText));
+                    }
+                    catch(e){
+                        color.push(await page.$eval(`div.mobile-four > div:nth-child(9) > div > ul > li:nth-child(${(y+1)}) > div > p`, p => p.innerText));
+                    }
+                }
+            }
         }
-        catch (e) {
-            color.push(await page.$eval("div.mobile-four > div:nth-child(9) > div > ul > li:nth-child(2) > div > p", p => p.innerText));
+        catch(e){}
+
+        //About
+        const about =[];
+        try{
+            if(await page.$("div.div-contenedor-ficha-producto > div > div > div.mobile-four > div:nth-child(5) > div > div:nth-child(1) > div > ul")){
+                const about_list = await page.$$("div.mobile-four.div-two-part.columns.datasheet > div:nth-child(5) > div > div > div > ul.lista-atributos > li");
+                for(let z=1;z<=about_list.length;z++){
+                    about.push(await page.$eval(`div.mobile-four.div-two-part.columns.datasheet > div:nth-child(5) > div > div > div > ul.lista-atributos > li:nth-child(${z})`, li => li.innerText));
+                }
+            }
         }
+        catch(e){}
 
         // Img
         const img = await page.$eval("div.div-contenedor-ficha-producto > div > div > div:nth-child(1) > div.contenedor-gallery > div > div.swiper-container > div > div > a > img", img => img.src);
@@ -38,6 +64,7 @@ async function getdetails(url, page) {
         return {
             URL: url,
             Name: prod_name,
+            About: about.toString(),
             FactSheetPDF: fact.toString(),
             Code: code.toString(),
             Color: color.toString(),
