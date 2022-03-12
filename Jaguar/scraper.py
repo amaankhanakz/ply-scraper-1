@@ -45,7 +45,7 @@ def scrape(url, use_utf_8):
         file_path = f'{dir}/{url.replace("https://www.jaquar.com/en/", "")}.csv'
 
         if use_utf_8:
-            csv_file = open(file_path, 'w', newline='', encoding="utf-8")   # symbols like ₹ wont render correctly in the final csv without using utf-8 on windows
+            csv_file = open(file_path, 'w', newline='', encoding="utf-8")   # otherwise it will throw error for symbols like ₹ on windows
         else:
             csv_file = open(file_path, 'w')
 
@@ -110,7 +110,7 @@ def scrape(url, use_utf_8):
 if __name__ == '__main__':
 
     '''
-    usege:
+    usage:
     -> check if url is correct
     -> run
     '''
