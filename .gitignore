@@ -7,6 +7,7 @@
 *.zip
 *.exe
 *.tst.*
+data
 .dump
 env.py
 __pycache__
