@@ -11,3 +11,4 @@ data
 .dump
 env.py
 __pycache__
+node_modules

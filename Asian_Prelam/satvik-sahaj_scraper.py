@@ -133,6 +133,32 @@ def scrape(url, use_utf_8):
     csv_file.close()
 
 
+    # sanyukt
+    sanyukt_source = requests.get(url[2])
+    sanyukt_page = BeautifulSoup(sanyukt_source.text, 'lxml')
+
+    sanyukt_file = f'{data_dir}/sanyukt.csv'
+    if use_utf_8:
+        csv_file = open(sanyukt_file, 'w', newline='', encoding="utf-8")   # otherwise it will throw error for symbols like ₹ on windows
+    else:
+        csv_file = open(sanyukt_file, 'w')
+
+    csv_writer = csv.writer(csv_file)
+    csv_writer.writerow(['name', 'url', 'image', 'description'])
+
+    # url
+    sanyukt_url = url[2]
+    # name
+    sanyukt_name = sanyukt_page.select_one('section.design-desc-area.section.sanyukt > div:nth-child(1) > div > h2').text.strip()
+    print(f'> {sanyukt_name}')
+    # image
+    sanyukt_img = 'https://www.asianprelam.com/' + sanyukt_page.select_one('section.design-desc-area.section.sanyukt > div:nth-child(2) > div:nth-child(1) > div > img').attrs['src']
+    # description
+    sanyukt_desc = [desc.text.strip().replace('\n', '') for desc in sanyukt_page.select('section.design-desc-area.section.sanyukt > div:nth-child(2) > div:nth-child(2) > div')]
+
+    csv_writer.writerow([sanyukt_name, sanyukt_url, sanyukt_img, sanyukt_desc])
+    csv_file.close()
+
 
 if __name__ == '__main__':
     '''
@@ -149,7 +175,8 @@ if __name__ == '__main__':
 
     url = [
         'https://www.asianprelam.com/satvik.php',
-        'https://www.asianprelam.com/sahaj.php'
+        'https://www.asianprelam.com/sahaj.php',
+        'https://www.asianprelam.com/sanyukt.php'
     ]
 
     scrape(url, use_utf_8)
