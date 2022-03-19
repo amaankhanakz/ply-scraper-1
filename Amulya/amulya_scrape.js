@@ -46,7 +46,14 @@ async function getdetails(url, page) {
         };
     }
     catch (e) {
-        throw e;
+        return {
+            URL: url,
+            Name: "",
+            Code: "",
+            About: "",
+            Description: "",
+            Image: ""
+        };
     }
 };
 
