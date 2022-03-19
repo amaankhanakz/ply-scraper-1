@@ -14,10 +14,21 @@ async function getdetails(url, page) {
         const prod_name = await page.$eval("div.content-wrapper > div.produt-detail-outer > div > div:nth-child(1) > div:nth-child(2) > div > h4", h4 => h4.textContent);
 
         // Code
-        const code = await page.$eval("div.content-wrapper > div.produt-detail-outer > div > div:nth-child(1) > div:nth-child(2) > div > h5", h5 => h5.innerText);
-
+        let code = "";
+        try{
+            code = await page.$eval("div.content-wrapper > div.produt-detail-outer > div > div:nth-child(1) > div:nth-child(2) > div > h5", h5 => h5.innerText);
+        }
+        catch (e) {
+            code = "";
+        }
         // About
-        const about = await page.$eval("body > div.header > div.content-wrapper > div.produt-detail-outer > div > div:nth-child(1) > div:nth-child(2) > div > p:nth-child(4)", p => p.innerText);
+        let about = "";
+        try{
+            about = await page.$eval("body > div.header > div.content-wrapper > div.produt-detail-outer > div > div:nth-child(1) > div:nth-child(2) > div > p:nth-child(4)", p => p.innerText);
+        }
+        catch (e) {
+            about = "";
+        }
 
         // Image
         const img = await page.$eval("body > div.header > div.content-wrapper > div.produt-detail-outer > div > div:nth-child(1) > div:nth-child(1) > div > a", a => a.href);
@@ -46,14 +57,7 @@ async function getdetails(url, page) {
         };
     }
     catch (e) {
-        return {
-            URL: url,
-            Name: "",
-            Code: "",
-            About: "",
-            Description: "",
-            Image: ""
-        };
+        throw(e);
     }
 };
 
@@ -91,6 +95,11 @@ async function getLinks(page) {
         }
         prevLastItem = currentLastItem;
     }
+
+    // await scrollPageToBottom(page, {
+    //     size: 400,
+    //     delay: 1000
+    // })
 
     links = await page.$$eval('#results > div > div.short-detail > a', allAs => allAs.map(a => a.href));
 
