@@ -24,7 +24,12 @@ async function getdetails(url, page) {
         // About
         let about = "";
         try{
-            about = await page.$eval("body > div.header > div.content-wrapper > div.produt-detail-outer > div > div:nth-child(1) > div:nth-child(2) > div > p:nth-child(4)", p => p.innerText);
+            if(await page.$("body > div.header > div.content-wrapper > div.produt-detail-outer > div > div:nth-child(1) > div:nth-child(2) > div > p:nth-child(4)")){
+                about = await page.$eval("body > div.header > div.content-wrapper > div.produt-detail-outer > div > div:nth-child(1) > div:nth-child(2) > div > p:nth-child(4)", p => p.innerText);
+            }
+            else if(await page.$("body > div.header > div.content-wrapper > div.produt-detail-outer > div > div:nth-child(1) > div:nth-child(2) > div > p")){
+                about = await page.$eval("body > div.header > div.content-wrapper > div.produt-detail-outer > div > div:nth-child(1) > div:nth-child(2) > div > p", p => p.innerText);
+            }
         }
         catch (e) {
             about = "";
