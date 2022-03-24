@@ -2,6 +2,13 @@ const puppeteer = require('puppeteer');
 let xlsx = require('xlsx');
 
 async function getdetails(url, page){
+    const material=[];
+    const finish=[];
+    const type=[];
+    const size=[];
+    const mrp=[];
+    const design=[];
+    const suitable=[];
     try{
         await page.goto(url, {
             waitUntil: "load",
@@ -14,17 +21,25 @@ async function getdetails(url, page){
     
         // Description
         const desg_list = await page.$$("#produt-top-area > div.product-content > div:nth-child(4) > div.product-head-section > div > ul > li");
-
-        const desc=[];
-        let d = "";
-        for(let j = 1; j<= desg_list.length; j++){
+        
             try{
-                desc.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(4) > div.product-head-section.short-attr-info > div > ul > li:nth-child(${j})`, li => li.innerText));
+                material.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(4) > div.product-head-section.short-attr-info > div > ul > li:nth-child(1)`, li => li.innerText));
+                finish.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(4) > div.product-head-section.short-attr-info > div > ul > li:nth-child(2)`, li => li.innerText));
+                type.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(4) > div.product-head-section.short-attr-info > div > ul > li:nth-child(3)`, li => li.innerText));
+                size.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(4) > div.product-head-section.short-attr-info > div > ul > li:nth-child(4)`, li => li.innerText));
+                mrp.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(4) > div.product-head-section.short-attr-info > div > ul > li:nth-child(5)`, li => li.innerText));
+                design.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(4) > div.product-head-section.short-attr-info > div > ul > li:nth-child(6)`, li => li.innerText));
+                suitable.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(4) > div.product-head-section.short-attr-info > div > ul > li:nth-child(7)`, li => li.innerText));
             }
             catch(e){
-                throw(e);
+                material.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(5) > div.product-head-section.short-attr-info > div > ul > li:nth-child(1)`, li => li.innerText));
+                finish.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(5) > div.product-head-section.short-attr-info > div > ul > li:nth-child(2)`, li => li.innerText));
+                type.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(5) > div.product-head-section.short-attr-info > div > ul > li:nth-child(3)`, li => li.innerText));
+                size.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(5) > div.product-head-section.short-attr-info > div > ul > li:nth-child(4)`, li => li.innerText));
+                mrp.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(5) > div.product-head-section.short-attr-info > div > ul > li:nth-child(5)`, li => li.innerText));
+                design.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(5) > div.product-head-section.short-attr-info > div > ul > li:nth-child(6)`, li => li.innerText));
+                suitable.push(await page.$eval(`#produt-top-area > div.product-content > div:nth-child(5) > div.product-head-section.short-attr-info > div > ul > li:nth-child(7)`, li => li.innerText));
             }
-        }
 
         const img = [];
         let image = [];
@@ -43,21 +58,33 @@ async function getdetails(url, page){
             }
         }
         catch(e) {
-            
+            img.push("");
         }
     
         return {
             URL: url,
             Name: prod_name,
-            Description: desc.toString(),
+            Material: material.toString(),
+            Finish: finish.toString(),
+            Type: type.toString(),
+            Size: size.toString(),
+            MRP: mrp.toString(),
+            Design: design.toString(),
+            Suitable: suitable.toString(),
             Image_Link: image.toString()
         };
     }
     catch(e){
         return {
-            URL: "",
+            URL: url,
             Name: "",
-            Description: "",
+            Material: material.toString(),
+            Finish: finish.toString(),
+            Type: type.toString(),
+            Size: size.toString(),
+            MRP: mrp.toString(),
+            Design: design.toString(),
+            Suitable: suitable.toString(),
             Image_Link: ""
         };
     }
@@ -76,7 +103,7 @@ async function clicktillEnd(page){
     const isBtnVisible = async (page, cssSelector) => {
         let visible = true;
         await page
-        .waitForSelector(cssSelector, { visible: true, timeout: 7000 })
+        .waitForSelector(cssSelector, { visible: true, timeout: 9000 })
         .catch(() => {
             visible = false;
         });
@@ -92,6 +119,7 @@ async function clicktillEnd(page){
         .click(selectorForLoadMoreButton)
         .catch(() => {});
         loadMoreVisible = await isBtnVisible(page, selectorForLoadMoreButton);
+        if(i==3) break;
         console.log(i);
         i++;
     }
@@ -110,12 +138,14 @@ async function main(){
     // -> set the file path at line 134 as the path of the csv to which the scraped data is to be written.
     // -> run
 
-    let url = "floor-tiles";
+    let url = "ceramic-tiles";
     await page.goto("https://www.orientbell.com/tiles/"+url, {
         waitUntil: "load",
         timeout: 0,
     });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
+    await page.click("div.modals-wrapper > aside.modal-popup > div.modal-inner-wrap > header > button");
+    await page.waitForTimeout(3000);
 
     await clicktillEnd(page);
     await page.waitForTimeout(4000);
@@ -127,18 +157,18 @@ async function main(){
     for(let link of allLinks){
         const data = await getdetails(link,page);
         alldata.push(data);
-        // if(i==3) break;
-        console.log(i);
+        if(i==3) break;
+        console.log("In"+i);
         i++;
     }
 
+    console.log(alldata);
     // To csv
     const wb = xlsx.utils.book_new();
     const ws = xlsx.utils.json_to_sheet(alldata);
     xlsx.utils.book_append_sheet(wb, ws);
-    xlsx.writeFile(wb, "floor_tiles.xlsx");
+    xlsx.writeFile(wb, "ceramic_tiles.xlsx");
 
-    console.log(alldata);
     console.log("Converted to excel file");
     console.log("Done!!");
 
